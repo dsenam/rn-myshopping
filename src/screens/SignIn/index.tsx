@@ -19,7 +19,8 @@ export function SignIn() {
 
       <Input placeholder="senha" secureTextEntry />
 
-      <Button title="Entrar" onPress={() => {}} />
+      <Button style={{marginBottom: 8}} title="Entrar" onPress={() => {}} />
+      <Button style={{backgroundColor: 'orange'}} title="Entrar como anônimo" onPress={handleSignInAnonymously} />
 
       <Account>
         <ButtonText title="Recuperar senha" onPress={() => {}} />
