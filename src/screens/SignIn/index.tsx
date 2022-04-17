@@ -17,7 +17,29 @@ export function SignIn() {
   function handleCreateUserAccount() {
     auth()
       .createUserWithEmailAndPassword(email, password)
-      .then(() => Alert.alert("Usuário criado com sucesso"));
+      .then(() => Alert.alert("Usuário criado com sucesso"))
+      .catch((error) => {
+        switch (error.code) {
+          case "auth/email-already-in-use":
+            Alert.alert(
+              "Este e-mail já está em uso. Escolhe outro e-mail para cadastrar"
+            );
+            break;
+          case "auth/invalid-email":
+            Alert.alert(
+              "Este e-mail está inválido. Por favor escolha outro e-mail para cadastrar"
+            );
+            break;
+          case "auth/weak-password":
+            Alert.alert(
+              "A senha deve ter no mínimo 6 digítos"
+            );
+            break;
+
+          default:
+            break;
+        }
+      });
   }
 
   return (
@@ -33,7 +55,7 @@ export function SignIn() {
 
       <Input placeholder="senha" secureTextEntry onChangeText={setPassword} />
 
-      <Button style={{ marginBottom: 8 }} title="Entrar" onPress={() => {}} />
+      <Button style={{ marginBottom: 8 }} title="Entrar" onPress={handleCreateUserAccount} />
       <Button
         style={{ backgroundColor: "orange" }}
         title="Entrar como anônimo"
