@@ -1,40 +1,58 @@
-import React, {useState, useEffect} from 'react';
-import { FlatList } from 'react-native';
-import storage from '@react-native-firebase/storage'
-import { Container, PhotoInfo } from './styles';
-import { Header } from '../../components/Header';
-import { Photo } from '../../components/Photo';
-import { File, FileProps } from '../../components/File';
+import React, { useState, useEffect } from "react";
+import { Alert, FlatList } from "react-native";
+import storage from "@react-native-firebase/storage";
+import { Container, PhotoInfo } from "./styles";
+import { Header } from "../../components/Header";
+import { Photo } from "../../components/Photo";
+import { File, FileProps } from "../../components/File";
 
-import { photosData } from '../../utils/photo.data';
+import { photosData } from "../../utils/photo.data";
 
 export function Receipts() {
-  const [photos, setPhotos] = useState<FileProps[]>([])
-  const [photoSelected, setPhotoSelected] = useState('')
-  const [photoInfo, setPhotoInfo] = useState('')
+  const [photos, setPhotos] = useState<FileProps[]>([]);
+  const [photoSelected, setPhotoSelected] = useState("");
+  const [photoInfo, setPhotoInfo] = useState("");
+
+  async function fetchImages() {
+    storage()
+      .ref("images")
+      .list()
+      .then((result) => {
+        const files: FileProps[] = [];
+
+        result.items.forEach((file) => {
+          files.push({
+            name: file.name,
+            path: file.fullPath,
+          });
+        });
+
+        setPhotos(files);
+      });
+  }
 
   useEffect(() => {
-    storage().ref('images').list().then(result => {
-      const files: FileProps[] = []
+    fetchImages();
+  }, []);
 
-      result.items.forEach(file => {
-        files.push({
-          name: file.name,
-          path: file.fullPath
-        })
-      });
+  async function handleShowImage(path: string) {
+    const urlImage = await storage().ref(path).getDownloadURL();
+    setPhotoSelected(urlImage);
 
-      setPhotos(files)
-    })
-  }, [])
+    const info = await storage().ref(path).getMetadata();
 
-  async function handleShowImage(path:string) {
-    const urlImage = await storage().ref(path).getDownloadURL()
-    setPhotoSelected(urlImage)
+    setPhotoInfo(`Imagem selecionada: ${info.name}`);
+  }
 
-    const info = await storage().ref(path).getMetadata()
-
-    setPhotoInfo(`Imagem selecionada: ${info.name}`)
+  async function handleDeleteImage(path: string) {
+    storage()
+      .ref(path)
+      .delete()
+      .then(() => {
+        Alert.alert("Imagem excluída");
+        fetchImages()
+      })
+      .catch((err) => console.error(err));
   }
 
   return (
@@ -43,23 +61,21 @@ export function Receipts() {
 
       <Photo uri={photoSelected} />
 
-      <PhotoInfo>
-        {photoInfo}
-      </PhotoInfo>
+      <PhotoInfo>{photoInfo}</PhotoInfo>
 
       <FlatList
         data={photos}
-        keyExtractor={item => item.name}
+        keyExtractor={(item) => item.name}
         renderItem={({ item }) => (
           <File
             data={item}
             onShow={() => handleShowImage(item.path)}
-            onDelete={() => { }}
+            onDelete={() => handleDeleteImage(item.path)}
           />
         )}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
-        style={{ width: '100%', padding: 24 }}
+        style={{ width: "100%", padding: 24 }}
       />
     </Container>
   );
