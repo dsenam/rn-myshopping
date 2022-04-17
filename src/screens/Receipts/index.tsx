@@ -10,6 +10,8 @@ import { photosData } from '../../utils/photo.data';
 
 export function Receipts() {
   const [photos, setPhotos] = useState<FileProps[]>([])
+  const [photoSelected, setPhotoSelected] = useState('')
+  const [photoInfo, setPhotoInfo] = useState('')
 
   useEffect(() => {
     storage().ref('images').list().then(result => {
@@ -26,14 +28,23 @@ export function Receipts() {
     })
   }, [])
 
+  async function handleShowImage(path:string) {
+    const urlImage = await storage().ref(path).getDownloadURL()
+    setPhotoSelected(urlImage)
+
+    const info = await storage().ref(path).getMetadata()
+
+    setPhotoInfo(`Imagem selecionada: ${info.name}`)
+  }
+
   return (
     <Container>
       <Header title="Comprovantes" />
 
-      <Photo uri="" />
+      <Photo uri={photoSelected} />
 
       <PhotoInfo>
-        Informações da foto
+        {photoInfo}
       </PhotoInfo>
 
       <FlatList
@@ -42,7 +53,7 @@ export function Receipts() {
         renderItem={({ item }) => (
           <File
             data={item}
-            onShow={() => { }}
+            onShow={() => handleShowImage(item.path)}
             onDelete={() => { }}
           />
         )}
