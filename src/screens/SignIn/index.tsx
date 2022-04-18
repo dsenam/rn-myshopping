@@ -14,6 +14,22 @@ export function SignIn() {
     const { user } = await auth().signInAnonymously();
   }
 
+  function handleSignInWithEmailAndPassword() {
+    auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(({ user }) => console.log(user))
+      .catch((error) => {
+        switch (error.code) {
+          case 'auth/user-not-found' || 'auth/wrong-password':
+            Alert.alert('Usuário não encontrado, email ou senha inválido')
+            break;
+        
+          default:
+            break;
+        }
+      });
+  }
+
   function handleCreateUserAccount() {
     auth()
       .createUserWithEmailAndPassword(email, password)
@@ -31,9 +47,7 @@ export function SignIn() {
             );
             break;
           case "auth/weak-password":
-            Alert.alert(
-              "A senha deve ter no mínimo 6 digítos"
-            );
+            Alert.alert("A senha deve ter no mínimo 6 digítos");
             break;
 
           default:
@@ -55,7 +69,11 @@ export function SignIn() {
 
       <Input placeholder="senha" secureTextEntry onChangeText={setPassword} />
 
-      <Button style={{ marginBottom: 8 }} title="Entrar" onPress={handleCreateUserAccount} />
+      <Button
+        style={{ marginBottom: 8 }}
+        title="Entrar"
+        onPress={handleSignInWithEmailAndPassword}
+      />
       <Button
         style={{ backgroundColor: "orange" }}
         title="Entrar como anônimo"
